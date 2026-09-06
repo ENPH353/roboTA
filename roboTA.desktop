@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=roboTA
+Comment=Specialized 353 TA
+Exec=bash -c "/home/fizzer/roboTA/venv/bin/python /home/fizzer/roboTA/app.py & sleep 1 && firefox /home/fizzer/roboTA/templates/index.html"
+Icon=utilities-terminal
+Terminal=false
+Categories=Utility;

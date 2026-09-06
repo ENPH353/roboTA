@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>roboTA</title>
+    <!-- External Libs -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Link to external CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>Student Verification</h2>
+            <form id="loginForm">
+                <input type="text" id="studentIdInput" class="login-input" placeholder="Enter Student Number" required autocomplete="off">
+                <button type="submit" class="login-submit-btn" id="loginBtn">Enter Application</button>
+            </form>
+            <div id="loginError" class="login-error">Invalid Student Number. Please try again.</div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="project-container">
+            <span class="project-label">Project Folder</span>
+            <select id="projectSelect" class="project-select">
+                <option value="lab_1">Lab 1</option>
+                <option value="lab_2">Lab 2</option>
+                <option value="lab_3">Lab 3</option>
+                <option value="lab_4">Lab 4</option>
+                <option value="lab_5">Lab 5</option>
+                <option value="lab_6">Lab 6</option>
+                <option value="lab_7">Lab 7</option>
+                <option value="lab_8">Lab 8</option>
+                <option value="competition">Competition</option>
+                <option value="lit_review">Literature Review</option>
+            </select>
+        </div>
+
+        <button class="new-chat-btn" id="newChatBtn"><span>+ New Chat</span></button>
+        <div class="chat-list" id="chatList"></div>
+
+        <button class="export-btn" id="exportBtn"><span>Export Lab Chats</span></button>
+    </div>
+
+    <div class="main-chat-container">
+        <div class="chat-wrapper">
+            <div class="top-bar">
+                <div class="switch-container">
+                    <span>Switch Models</span>
+                    <label class="switch">
+                        <input type="checkbox" id="modelToggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="activeModelLabel">Ollama</span>
+                </div>
+                <button type="button" id="forgetBtn" class="forget-btn" title="Forget saved student number">Forget Student ID</button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div id="networkStatus" class="status online" style="margin-bottom: 0;">Checking network...</div>
+                <div style="display: flex; gap: 12px; font-size: 0.8em; align-items: center; color: #495057; font-weight: bold;">
+                    <label>Temp: <input type="number" id="tempInput" min="0.0" max="1.0" step="0.1" value="1.0" style="width: 45px;"></label>
+                    <label>Top-P: <input type="number" id="topPInput" min="0.0" max="1.0" step="0.05" placeholder="Def" style="width: 55px;"></label>
+                    <label>Top-K: <input type="number" id="topKInput" min="1" step="1" placeholder="Def" style="width: 50px;"></label>
+                </div>
+            </div>
+
+            <div id="chatWindow"></div>
+
+            <form id="chatForm" class="input-area" style="flex-direction: column; gap: 5px;">
+                <div id="filePreviewTray" style="padding: 5px; display: none;">
+                    <div id="filePreviewContainer" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;"></div>
+                </div>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <input type="file" id="fileInput" accept="image/*,application/pdf" style="display: none;" multiple>
+                    <button type="button" id="attachBtn" style="background-color: #6c757d; padding: 0 15px;">📎</button>
+                    <textarea id="userInput" placeholder="Ask something or attach files..." required></textarea>
+                    <button type="submit" id="sendBtn">Send</button>
+                    <button type="button" id="stopBtn">Stop</button>
+                </div>
+            </form>
+
+            <div id="studentDisplay" class="student-id-footer"></div>
+        </div>
+    </div>
+
+    <!-- Import our JS modules -->
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
