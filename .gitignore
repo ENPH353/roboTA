@@ -1,3 +1,8 @@
 roboTA_venv/
 __pycache__/
 venv/
+<<<<<<< HEAD
+=======
+student_numbers/saved_student.json
+student_numbers/student_numbers.json
+>>>>>>> refs/remotes/origin/main

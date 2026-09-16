@@ -29,6 +29,30 @@ const elements = {
 
 marked.setOptions({ breaks: true, gfm: true });
 
+// --- MATHJAX HELPERS ---
+function renderMath(element) {
+    if (window.MathJax && window.MathJax.typesetPromise && element) {
+        window.MathJax.typesetPromise([element]).catch(err => console.error("MathJax error:", err));
+    }
+}
+
+// Preprocess LaTeX delimiters before marked.js strips backslashes
+function preprocessLaTeX(text) {
+    if (!text) return "";
+    return text
+        .replace(/\\\[/g, () => '$$')
+        .replace(/\\\]/g, () => '$$')
+        .replace(/\\\(/g, () => '$')
+        .replace(/\\\)/g, () => '$');
+}
+
+// Debounce MathJax typesetting to avoid browser lag during streaming
+let mathDebounceTimer = null;
+function debouncedRenderMath(element) {
+    clearTimeout(mathDebounceTimer);
+    mathDebounceTimer = setTimeout(() => renderMath(element), 300);
+}
+
 // --- INITIALIZATION ---
 async function init() {
     await checkAuth();
@@ -150,7 +174,6 @@ function deleteChat(id, event) {
     renderActiveChat();
 }
 
-// RESTORED: Chat List with Edit/Delete features
 function renderChatList() {
     elements.chatList.innerHTML = '';
     const currentProject = elements.projectSelect.value;
@@ -237,7 +260,6 @@ function isScrolledToBottom(element) {
     return element.scrollHeight - element.clientHeight - element.scrollTop <= threshold;
 }
 
-// RESTORED: Full active chat rendering including Stream status
 function renderActiveChat() {
     elements.chatWindow.innerHTML = '';
     const activeChat = state.allChats[state.activeChatId];
@@ -265,8 +287,11 @@ function renderActiveChat() {
             }
             const textDiv = document.createElement('div');
             textDiv.className = "text-zone";
-            textDiv.innerHTML = marked.parse(msg.content);
+            textDiv.innerHTML = marked.parse(preprocessLaTeX(msg.content));
             msgDiv.appendChild(textDiv);
+            
+            // Render MathJax for saved bot messages
+            renderMath(textDiv);
         }
         elements.chatWindow.appendChild(msgDiv);
     });
@@ -292,8 +317,12 @@ function renderActiveChat() {
 
         const textDiv = document.createElement('div');
         textDiv.className = "text-zone";
-        textDiv.innerHTML = stream.text ? marked.parse(stream.text) : "Thinking...";
+        textDiv.innerHTML = stream.text ? marked.parse(preprocessLaTeX(stream.text)) : "Thinking...";
         botMsgDiv.appendChild(textDiv);
+
+        if (stream.text) {
+            renderMath(textDiv);
+        }
 
         elements.chatWindow.appendChild(botMsgDiv);
     } else {
@@ -304,7 +333,7 @@ function renderActiveChat() {
     elements.chatWindow.scrollTop = elements.chatWindow.scrollHeight;
 }
 
-// --- RESTORED: MULTI-FILE & STAGING LOGIC ---
+// --- MULTI-FILE & STAGING LOGIC ---
 function renderStagedFiles() {
     elements.filePreviewContainer.innerHTML = '';
     
@@ -365,15 +394,13 @@ elements.userInput.addEventListener('paste', (e) => {
     }
 });
 
-
-// --- RESTORED: SUBMISSION & STREAMING ENGINE ---
+// --- SUBMISSION & STREAMING ENGINE ---
 document.getElementById('chatForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const textValue = elements.userInput.value;
     const targetChatId = state.activeChatId;
     const activeChat = state.allChats[targetChatId];
     
-    // RESTORED: File Badge Injection
     const userMsg = { role: "user", content: textValue, timestamp: new Date().toLocaleString() };
     if (state.stagedFiles.length > 0) {
         const names = state.stagedFiles.map(f => f.name).join(', ');
@@ -381,7 +408,6 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
     }
     activeChat.messages.push(userMsg);
 
-    // Auto-rename chat
     if (activeChat.title === "New Conversation" && textValue.trim() !== '') {
         activeChat.title = textValue.substring(0, 24) + (textValue.length > 24 ? "..." : "");
     }
@@ -403,7 +429,6 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
     if (topPVal !== '') formData.append('top_p', topPVal);
     if (topKVal !== '') formData.append('top_k', topKVal);
     
-    // RESTORED: Attaching staged files to Payload
     if (state.stagedFiles.length > 0) {
         for (let file of state.stagedFiles) formData.append('file', file); 
     }
@@ -467,10 +492,11 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
                                     thinkingDiv.classList.remove('hidden');
                                 }
                                 if (streamState.text) {
-                                    textDiv.innerHTML = marked.parse(streamState.text);
+                                    textDiv.innerHTML = marked.parse(preprocessLaTeX(streamState.text));
+                                    // Live MathJax typesetting (debounced to 300ms to preserve UI performance)
+                                    debouncedRenderMath(textDiv);
                                 }
                             }
-                            // RESTORED: Auto-scroll
                             if (isScrolledToBottom(elements.chatWindow)) {
                                 elements.chatWindow.scrollTop = elements.chatWindow.scrollHeight;
                             }
@@ -509,12 +535,12 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
         renderStagedFiles();
         renderChatList();
 
+        // Re-renders active chat and executes final MathJax pass on complete response
         if (state.activeChatId === targetChatId) renderActiveChat();
     }
 });
 
-
-// --- RESTORED: CONTROLS & EXPORTS ---
+// --- CONTROLS & EXPORTS ---
 elements.stopBtn.onclick = () => {
     if (state.activeStreams[state.activeChatId]) {
         state.activeStreams[state.activeChatId].controller.abort();
