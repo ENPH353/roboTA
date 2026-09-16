@@ -29,8 +29,8 @@ pip install -r requirements.txt
 - Or you can drag and drop the *roboTA.desktop* file to your desktop and double click it.
 
 ## Stopping roboTA
-- To terminate roboTA, close it's firefox tab and run the following command:
+- To terminate roboTA, close it's firefox tab and run the following command from the roboTA folder:
 ```
-fuser -k 5000/tcp
+./stop.sh
 ```
 - This command terminates any process listening or using TCP port 5000 (which is the port that the roboTA flask service uses)
