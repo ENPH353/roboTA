@@ -1,3 +1,5 @@
 roboTA_venv/
 __pycache__/
 venv/
+student_numbers/saved_student.json
+student_numbers/student_numbers.json
