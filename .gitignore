@@ -3,3 +3,6 @@ __pycache__/
 venv/
 student_numbers/saved_student.json
 student_numbers/student_numbers.json
+build/
+dist/
+*.spec
