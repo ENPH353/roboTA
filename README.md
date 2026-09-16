@@ -9,7 +9,7 @@ roboTA can recieve outputs from both a local ollama phi4:mini model, and via API
 1) Install local LLMs
 ```
 curl -fsSL https://ollama.com/install.sh | sh
-ollama pull phi4-mini
+ollama pull phi4-mini:latest
 ```
 2) Clone this repository
 ```
