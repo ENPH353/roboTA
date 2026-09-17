@@ -36,14 +36,33 @@ function renderMath(element) {
     }
 }
 
-// Preprocess LaTeX delimiters before marked.js strips backslashes
-function preprocessLaTeX(text) {
+// Protects LaTeX from marked.js before Markdown parsing
+function parseMarkdownWithMath(text) {
     if (!text) return "";
-    return text
-        .replace(/\\\[/g, () => '$$')
-        .replace(/\\\]/g, () => '$$')
-        .replace(/\\\(/g, () => '$')
-        .replace(/\\\)/g, () => '$');
+
+    const mathBlocks = [];
+
+    // 1. Temporarily replace display math \[...\] or $$...$$ with unique placeholders
+    let protectedText = text.replace(/(\\\[[\s\S]*?\\\]|\$\$[\s\S]*?\$\$)/g, (match) => {
+        mathBlocks.push(match);
+        return `%%MATH_BLOCK_${mathBlocks.length - 1}%%`;
+    });
+
+    // 2. Temporarily replace inline math \(...\) or $...$ with placeholders
+    protectedText = protectedText.replace(/(\\\([\s\S]*?\\\)|(?<!\$)\$[^\$\n]+?\$(?!\$))/g, (match) => {
+        mathBlocks.push(match);
+        return `%%MATH_BLOCK_${mathBlocks.length - 1}%%`;
+    });
+
+    // 3. Parse Markdown safely without corrupting math contents
+    let html = marked.parse(protectedText);
+
+    // 4. Restore original LaTeX blocks back into the HTML
+    mathBlocks.forEach((math, index) => {
+        html = html.replace(`%%MATH_BLOCK_${index}%%`, math);
+    });
+
+    return html;
 }
 
 // Debounce MathJax typesetting to avoid browser lag during streaming
@@ -287,7 +306,7 @@ function renderActiveChat() {
             }
             const textDiv = document.createElement('div');
             textDiv.className = "text-zone";
-            textDiv.innerHTML = marked.parse(preprocessLaTeX(msg.content));
+            textDiv.innerHTML = marked.parse(parseMarkdownWithMath(msg.content));
             msgDiv.appendChild(textDiv);
             
             // Render MathJax for saved bot messages
@@ -317,7 +336,7 @@ function renderActiveChat() {
 
         const textDiv = document.createElement('div');
         textDiv.className = "text-zone";
-        textDiv.innerHTML = stream.text ? marked.parse(preprocessLaTeX(stream.text)) : "Thinking...";
+        textDiv.innerHTML = stream.text ? marked.parse(parseMarkdownWithMath(stream.text)) : "Thinking...";
         botMsgDiv.appendChild(textDiv);
 
         if (stream.text) {
@@ -492,7 +511,7 @@ document.getElementById('chatForm').addEventListener('submit', async (e) => {
                                     thinkingDiv.classList.remove('hidden');
                                 }
                                 if (streamState.text) {
-                                    textDiv.innerHTML = marked.parse(preprocessLaTeX(streamState.text));
+                                    textDiv.innerHTML = marked.parse(parseMarkdownWithMath(streamState.text));
                                     // Live MathJax typesetting (debounced to 300ms to preserve UI performance)
                                     debouncedRenderMath(textDiv);
                                 }
@@ -628,6 +647,12 @@ function updateNetworkStatus() {
         statusDiv.className = "status offline";
     }
 }
+
+// Ping every 1 second (1000ms)
+setInterval(() => {
+    fetch('/heartbeat', { method: 'POST' }).catch(() => {});
+}, 1000);
+
 window.addEventListener('online', updateNetworkStatus);
 window.addEventListener('offline', updateNetworkStatus);
 

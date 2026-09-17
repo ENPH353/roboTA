@@ -2,6 +2,8 @@ import sys
 from flask import Flask, request, Response, jsonify, render_template
 from flask_cors import CORS
 import os
+import time
+import signal
 import json
 import base64
 import webbrowser
@@ -51,6 +53,29 @@ APP_STATE = {
 # Boot-up Sync
 APP_STATE["LAB_INSTRUCTIONS"] = sync_cache("https://api.00000043.xyz/api/lab_instructions", INSTRUCTIONS_FILE, {})
 APP_STATE["STUDENT_NUMBERS"] = set(sync_cache("https://api.00000043.xyz/api/student_numbers", STUDENT_NUM_FILE, []))
+
+# Heartbeat thread to check if app is closed
+LAST_HEARTBEAT = time.time()
+
+def watchdog():
+    """Shuts down the server if no browser ping is received for 6 seconds."""
+    # Give the browser 5 seconds initially to load up before enforcing
+    time.sleep(5)
+    while True:
+        time.sleep(1)
+        if time.time() - LAST_HEARTBEAT > 2.5: # If no heartbeat for 2.5 seconds, assume browser is closed
+            print("No active browser tabs detected. Shutting down server...")
+
+            os.kill(os.getpid(), signal.SIGINT)
+            break
+
+# Start the watchdog thread when the app starts
+threading.Thread(target=watchdog, daemon=True).start()
+@app.route('/heartbeat', methods=['POST'])
+def heartbeat():
+    global LAST_HEARTBEAT
+    LAST_HEARTBEAT = time.time()
+    return ("", 204)
 
 
 @app.route('/')

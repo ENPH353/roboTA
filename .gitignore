@@ -5,4 +5,5 @@ student_numbers/saved_student.json
 student_numbers/student_numbers.json
 build/
 dist/
-*.spec
+chat_logs/*
+!chat_logs/.gitkeep
