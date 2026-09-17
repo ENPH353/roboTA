@@ -1,5 +1,9 @@
 roboTA_venv/
 __pycache__/
 venv/
+dist/
 student_numbers/saved_student.json
 student_numbers/student_numbers.json
+chat_logs/*
+!chat_logs/.gitkeep
+build/
