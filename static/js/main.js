@@ -413,6 +413,17 @@ elements.userInput.addEventListener('paste', (e) => {
     }
 });
 
+// Ctrl+Enter (Cmd+Enter on macOS) sends the message
+elements.userInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.isComposing) return;
+    e.preventDefault();
+
+    // Match the button's availability: it is hidden while a response is streaming
+    if (state.activeStreams[state.activeChatId]) return;
+
+    document.getElementById('chatForm').requestSubmit(elements.sendBtn);
+});
+
 // --- SUBMISSION & STREAMING ENGINE ---
 document.getElementById('chatForm').addEventListener('submit', async (e) => {
     e.preventDefault();
