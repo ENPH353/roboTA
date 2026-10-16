@@ -64,10 +64,10 @@ def watchdog():
     while True:
         time.sleep(1)
         if time.time() - LAST_HEARTBEAT > 2.5: # If no heartbeat for 2.5 seconds, assume browser is closed
-            print("No active browser tabs detected. Shutting down server...")
-
-            os.kill(os.getpid(), signal.SIGINT)
-            break
+            print("WARNING: No active browser tabs detected.")
+            #print("No active browser tabs detected. Shutting down server...")
+            #os.kill(os.getpid(), signal.SIGINT)
+            #break
 
 # Start the watchdog thread when the app starts
 threading.Thread(target=watchdog, daemon=True).start()
