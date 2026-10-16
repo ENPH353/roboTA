@@ -47,12 +47,12 @@ APP_STATE = {
     "OLLAMA_MODEL": "phi4-mini:latest",
     "LAB_INSTRUCTIONS": {},
     "STUDENT_NUMBERS": set(),
-    "FETCH_KEY_URL": "https://api.00000043.xyz/api/get_key"
+    "FETCH_KEY_URL": "http://142.103.51.22:5000/api/get_key"
 }
 
 # Boot-up Sync
-APP_STATE["LAB_INSTRUCTIONS"] = sync_cache("https://api.00000043.xyz/api/lab_instructions", INSTRUCTIONS_FILE, {})
-APP_STATE["STUDENT_NUMBERS"] = set(sync_cache("https://api.00000043.xyz/api/student_numbers", STUDENT_NUM_FILE, []))
+APP_STATE["LAB_INSTRUCTIONS"] = sync_cache("http://142.103.51.22:5000/api/lab_instructions", INSTRUCTIONS_FILE, {})
+APP_STATE["STUDENT_NUMBERS"] = set(sync_cache("http://142.103.51.22:5000/api/student_numbers", STUDENT_NUM_FILE, []))
 
 # Heartbeat thread to check if app is closed
 LAST_HEARTBEAT = time.time()
